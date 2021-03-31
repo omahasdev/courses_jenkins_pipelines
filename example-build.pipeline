@@ -1,0 +1,49 @@
+pipeline {
+    agent any
+
+    environment {
+        registry = "omahasdev/courses_docker_nodejs_jenkins"
+        registryCredential = 'dockerhub'
+        dockerImage = ''
+        dockerImageLatest = ''
+    }
+
+    stages {
+        stage('Git') {
+            steps {
+                git branch: 'main', credentialsId: 'git', url: 'git@github.com:omahasdev/courses_docker_nodejs.git'
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                script {
+                    dockerImage = docker.build registry + ":$BUILD_NUMBER"
+                    dockerImageLatest = docker.build registry + ":latest"
+                    //sh '$WORKSPACE/build.sh'
+                }
+            }
+        }
+        
+        stage('Push') {
+            steps {
+                script {
+                    docker.withRegistry( '', registryCredential ) { 
+                        dockerImage.push()
+                        dockerImageLatest.push()
+                    }
+                }
+            }
+        }
+        
+        stage('Clean Up') {
+            steps {
+                script {
+                    sh "docker rmi $registry:$BUILD_NUMBER" 
+                }
+            }
+        }
+        
+    }
+}
+

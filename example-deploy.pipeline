@@ -1,0 +1,16 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Hello') {
+            steps {
+                script {
+                    //sh 'RUN_LIST=$(docker ps -a -q --filter ancestor=omahasdev/courses_docker_nodejs_jenkins)'
+                    sh 'if [ ! -z "$(docker ps -a -q --filter ancestor=omahasdev/courses_docker_nodejs_jenkins)" ]; then docker stop $(docker ps -a -q --filter ancestor=omahasdev/courses_docker_nodejs_jenkins); fi'
+                    sh 'docker run -dp 80:3000 omahasdev/courses_docker_nodejs_jenkins'
+                }
+            }
+        }
+    }
+}
+
